@@ -1,0 +1,2 @@
+# tomblog
+share some thinking
