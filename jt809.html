@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JT809 协议详解</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="index.html" class="logo">JT809 协议</a>
+        </div>
+    </nav>
+
+    <header class="header">
+        <div class="container">
+            <h1>JT809 道路运输车辆卫星定位系统平台数据交换</h1>
+            <p class="subtitle">JTT 809-2011 / 2019 标准详解</p>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <!-- 协议概述 -->
+            <section class="section">
+                <h2>协议概述</h2>
+                <div class="content-block">
+                    <p>JT809 是中华人民共和国交通运输行业标准，规定了道路运输车辆卫星定位系统中，上下级平台之间进行数据交换的技术要求、消息格式和传输协议。</p>
+                    
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <h3>标准版本</h3>
+                            <ul>
+                                <li><strong>JTT 809-2011</strong> - 初始版本</li>
+                                <li><strong>JTT 809-2019</strong> - 修订版本（新增时间戳字段）</li>
+                            </ul>
+                        </div>
+                        <div class="info-item">
+                            <h3>应用场景</h3>
+                            <ul>
+                                <li>上下级监管平台数据交换</li>
+                                <li>企业平台与政府监管平台对接</li>
+                                <li>跨区域平台互联互通</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 数据包结构 -->
+            <section class="section">
+                <h2>数据包结构</h2>
+                <div class="content-block">
+                    <h3>基本结构</h3>
+                    <div class="diagram">
+                        <div class="diagram-header">JT809Package</div>
+                        <div class="diagram-body">
+                            <div class="part">
+                                <span class="part-label">头标识</span>
+                                <span class="part-value">5B</span>
+                            </div>
+                            <div class="part">
+                                <span class="part-label">数据头</span>
+                                <span class="part-value">4-10 字节</span>
+                            </div>
+                            <div class="part">
+                                <span class="part-label">数据体</span>
+                                <span class="part-value">可变长度</span>
+                            </div>
+                            <div class="part">
+                                <span class="part-label">CRC校验</span>
+                                <span class="part-value">2 字节</span>
+                            </div>
+                            <div class="part">
+                                <span class="part-label">尾标识</span>
+                                <span class="part-value">5D</span>
+                            </div>
+                        </div>
+                        <div class="diagram-footer">EndFlag: 5D | BeginFlag: 5B</div>
+                    </div>
+
+                    <h3>数据头字段</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>字段名</th>
+                                <th>长度</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>MsgLength</td>
+                                <td>4 字节</td>
+                                <td>数据头 + 数据体长度</td>
+                            </tr>
+                            <tr>
+                                <td>MsgSN</td>
+                                <td>4 字节</td>
+                                <td>报文序列号（唯一标识）</td>
+                            </tr>
+                            <tr>
+                                <td>BusinessType</td>
+                                <td>2 字节</td>
+                                <td>业务数据类型（消息 ID）</td>
+                            </tr>
+                            <tr>
+                                <td>MsgGNSSCENTERID</td>
+                                <td>4 字节</td>
+                                <td>下级平台接入码（上级分配的唯一标识码）</td>
+                            </tr>
+                            <tr>
+                                <td>Version</td>
+                                <td>3 字节</td>
+                                <td>协议版本号标识（如 01 00 00 = 2011版）</td>
+                            </tr>
+                            <tr>
+                                <td>EncryptFlag</td>
+                                <td>1 字节</td>
+                                <td>报文加密标识位</td>
+                            </tr>
+                            <tr>
+                                <td>EncryptKey</td>
+                                <td>4 字节</td>
+                                <td>数据加密密钥</td>
+                            </tr>
+                            <tr class="new-field">
+                                <td>Time</td>
+                                <td>5 字节</td>
+                                <td>发送消息的系统时间（2019版新增）</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 转义规则 -->
+            <section class="section">
+                <h2>数据转义规则</h2>
+                <div class="content-block">
+                    <p>为确保 TCP 消息边界的正确识别，JT809 协议对数据内容进行了转义处理：</p>
+                    
+                    <table class="escape-table">
+                        <thead>
+                            <tr>
+                                <th>原字符</th>
+                                <th>转义后</th>
+                                <th>反转义</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>0x5B (起始标记)</td>
+                                <td>0x5A 0x01</td>
+                                <td>0x5A 0x01 → 0x5B</td>
+                            </tr>
+                            <tr>
+                                <td>0x5A (转义标记)</td>
+                                <td>0x5A 0x02</td>
+                                <td>0x5A 0x02 → 0x5A</td>
+                            </tr>
+                            <tr>
+                                <td>0x5D (结束标记)</td>
+                                <td>0x5E 0x01</td>
+                                <td>0x5E 0x01 → 0x5D</td>
+                            </tr>
+                            <tr>
+                                <td>0x5E (扩展标记)</td>
+                                <td>0x5E 0x02</td>
+                                <td>0x5E 0x02 → 0x5E</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 消息类型 -->
+            <section class="section">
+                <h2>消息类型分类</h2>
+                <div class="content-block">
+                    <div class="message-categories">
+                        <div class="category">
+                            <h3>链路管理类</h3>
+                            <ul>
+                                <li><strong>0x1001 - 主链路登录请求消息</strong></li>
+                                <li><strong>0x1002 - 主链路登录应答消息</strong></li>
+                                <li><strong>0x1003 - 主链路注销请求消息</strong></li>
+                                <li><strong>0x9001 - 从链路连接请求消息</strong></li>
+                                <li><strong>0x9002 - 从链路连接应答消息</strong></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="category">
+                            <h3>信息统计类</h3>
+                            <ul>
+                                <li><strong>0x9101 - 接收定位信息数量通知消息</strong></li>
+                                <li><strong>0x9102 - 平台链路连接情况上报请求消息</strong></li>
+                                <li><strong>0x9103 - 下发平台间消息序列号通知消息</strong></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="category">
+                            <h3>车辆动态信息交换</h3>
+                            <ul>
+                                <li><strong>0x1202 - 实时上传车辆定位信息</strong></li>
+                                <li><strong>0x9202 - 交换车辆定位信息消息</strong></li>
+                                <li><strong>0x1203 - 车辆定位信息自动补报</strong></li>
+                                <li><strong>0x1200 - 主链路动态信息交换消息</strong></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="category">
+                            <h3>车辆报警信息交互</h3>
+                            <ul>
+                                <li><strong>0x1400 - 主链路报警信息交互消息</strong></li>
+                                <li><strong>0x9400 - 从链路报警信息交互消息</strong></li>
+                                <li><strong>0x9401 - 报警督办请求消息</strong></li>
+                                <li><strong>0x9402 - 报警预警消息</strong></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="category">
+                            <h3>平台间信息交互</h3>
+                            <ul>
+                                <li><strong>0x1300 - 主链路平台间信息交互消息</strong></li>
+                                <li><strong>0x9300 - 从链路平台间信息交互消息</strong></li>
+                                <li><strong>0x1301 - 平台查岗应答消息</strong></li>
+                                <li><strong>0x9301 - 平台查岗请求消息</strong></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="category">
+                            <h3>车辆监管类</h3>
+                            <ul>
+                                <li><strong>0x1500 - 主链路车辆监管消息</strong></li>
+                                <li><strong>0x9500 - 从链路车辆监管消息</strong></li>
+                                <li><strong>0x9501 - 车辆单向监听请求</strong></li>
+                                <li><strong>0x9502 - 车辆拍照请求</strong></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 示例代码 -->
+            <section class="section">
+                <h2>C# 实现示例</h2>
+                <div class="content-block">
+                    <h3>1. 使用 NuGet 包</h3>
+                    <pre><code class="language-bash"># 安装 NuGet 包
+Install-Package JT809
+# 或安装支持音视频的扩展包
+Install-Package JT809.Protocol.Extensions.JT1078</code></pre>
+
+                    <h3>2. 组包（序列化）</h3>
+                    <pre><code class="language-csharp">// 创建 JT809 数据包
+JT809Package jT809Package = new JT809Package();
+
+// 设置数据头
+jT809Package.Header = new JT809Header
+{
+    MsgSN = 1666,                           // 报文序列号
+    EncryptKey = 9999,                      // 加密密钥
+    EncryptFlag = JT809Header_Encrypt.None, // 不加密
+    Version = new JT809Header_Version(1, 0, 0), // 2011版
+    BusinessType = JT809BusinessType.从链路报警信息交互消息.ToUInt16Value(),
+    MsgGNSSCENTERID = 20180920,            // 下级平台接入码
+};
+
+// 设置数据体
+JT809_0x9400 bodies = new JT809_0x9400
+{
+    VehicleNo = "粤A12345",                  // 车牌号
+    VehicleColor = JT809VehicleColorType.黄色, // 车辆颜色
+    SubBusinessType = JT809SubBusinessType.报警督办请求消息.ToUInt16Value(),
+};
+
+// 设置子数据体
+JT809_0x9400_0x9401 alertData = new JT809_0x9400_0x9401
+{
+    WarnSrc = JT809WarnSrc.车载终端,          // 报警来源
+    WarnType = JT809WarnType.疲劳驾驶报警.ToUInt16Value(),
+    WarnTime = DateTime.Parse("2018-09-27 10:24:00"),
+    SupervisionID = "123FFAA1",
+    SupervisionEndTime = DateTime.Parse("2018-09-27 11:24:00"),
+    SupervisionLevel = 3,
+    Supervisor = "smallchi",
+    SupervisorTel = "12345678901",
+    SupervisorEmail = "123456@qq.com"
+};
+
+bodies.SubBodies = alertData;
+jT809Package.Bodies = bodies;
+
+// 序列化为字节数组
+byte[] data = JT809Serializer.Serialize(jT809Package);
+string hex = data.ToHexString();
+// 输出: 5B 00 00 00 92 00 00 06 82 94 00 01 33 EF B8 ...</code></pre>
+
+                    <h3>3. 解包（反序列化）</h3>
+                    <pre><code class="language-csharp">// 将十六进制字符串转为字节数组
+var bytes = "5B 00 00 00 92 00 00 06 82 94 00 ... 5D".ToHexBytes();
+
+// 反序列化
+JT809Package jT809Package = JT809Serializer.Deserialize(bytes);
+
+// 解析数据头
+uint msgLength = jT809Package.Header.MsgLength;     // 146
+uint msgSN = jT809Package.Header.MsgSN;             // 1666
+JT809BusinessType businessType = (JT809BusinessType)jT809Package.Header.BusinessType;
+
+// 解析数据体
+JT809_0x9400 alertBody = (JT809_0x9400)jT809Package.Bodies;
+string vehicleNo = alertBody.VehicleNo;              // "粤A12345"
+
+// 解析子数据体
+JT809_0x9400_0x9401 alertData = (JT809_0x9400_0x9401)alertBody.SubBodies;
+string supervisionID = alertData.SupervisionID;      // "123FFAA1"
+DateTime warnTime = alertData.WarnTime;              // 2018-09-27 10:24:00</code></pre>
+
+                    <h3>4. 配置多个版本</h3>
+                    <pre><code class="language-csharp">// 同时使用 2011 和 2019 版本
+IServiceCollection serviceDescriptors = new ServiceCollection();
+serviceDescriptors.AddJT809Configure(new JT809_2011_Config());
+serviceDescriptors.AddJT809Configure(new JT809_2019_Config());
+
+// 获取对应的序列化器
+JT809Serializer serializer2011 = ServiceProvider.GetRequiredService&lt;JT809_2011_Config&gt;().GetSerializer();
+JT809Serializer serializer2019 = ServiceProvider.GetRequiredService&lt;JT809_2019_Config&gt;().GetSerializer();
+
+public class JT809_2019_Config : JT809GlobalConfigBase
+{
+    public override string ConfigId => "JT809_2019";
+    public JT809_2019_Config()
+    {
+        Version = JT809Version.JTT2019;  // 使用 2019 版本
+    }
+}</code></pre>
+                </div>
+            </section>
+
+            <!-- 项目经验 -->
+            <section class="section">
+                <h2>JT809 项目经验</h2>
+                <div class="content-block">
+                    <div class="project-card">
+                        <h3>交通运输监管平台</h3>
+                        <p class="project-meta">技术栈：Java Spring Boot + Vue.js | 角色：后端开发</p>
+                        <ul class="project-features">
+                            <li>实现 JT809-2011/2019 协议上下级平台数据交换</li>
+                            <li>支持主链路和从链路的双链路通信机制</li>
+                            <li>完成车辆定位信息实时交换（0x1202 / 0x9202）</li>
+                            <li>实现报警信息交互（疲劳驾驶、超速等）</li>
+                            <li>支持音视频实时传输（基于 JT1078 扩展）</li>
+                            <li>远程录像检索与回放功能</li>
+                        </ul>
+                    </div>
+
+                    <div class="project-card">
+                        <h3>安全监测网关</h3>
+                        <p class="project-meta">技术栈：Go + MySQL | 角色：架构设计</p>
+                        <ul class="project-features">
+                            <li>设计高并发 TCP 服务端，支持数千路 GNSS 终端连接</li>
+                            <li>实现 JT809 协议解析与转发网关</li>
+                            <li>完成车辆定位数据实时采集与存储</li>
+                            <li>实现消息补传与重发机制，确保数据完整性</li>
+                            <li>对接省级交通运输监管平台</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 测试工具 -->
+            <section class="section">
+                <h2>测试工具</h2>
+                <div class="content-block">
+                    <div class="tools-grid">
+                        <div class="tool-item">
+                            <h3>部标检测工具</h3>
+                            <p>JT809 联调工具 V1.2.5</p>
+                            <span class="tool-type">Windows 桌面应用</span>
+                        </div>
+                        <div class="tool-item">
+                            <h3>上下级平台模拟器</h3>
+                            <p>jt-t809-main-上下级模拟</p>
+                            <span class="tool-type">Java Maven 项目</span>
+                        </div>
+                        <div class="tool-item">
+                            <h3>C# 协议库</h3>
+                            <p>JT809-master / JT809DotNetty</p>
+                            <span class="tool-type">.NET Standard 2.0</span>
+                        </div>
+                        <div class="tool-item">
+                            <h3>流量分析工具</h3>
+                            <p>Fiddler / NetAssist</p>
+                            <span class="tool-type">网络调试助手</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 相关链接 -->
+            <section class="section">
+                <h2>相关资源</h2>
+                <div class="content-block">
+                    <ul class="resource-list">
+                        <li><a href="https://github.com/SmallChi/JT809" target="_blank">JT809 C# 开源库 (GitHub)</a></li>
+                        <li><a href="https://github.com/gh8080/jt-t809" target="_blank">JT809 上下级平台模拟器 (Java)</a></li>
+                        <li><a href="https://github.com/wuweixian/jt809-tcp-server" target="_blank">JT809 TCP 服务端 (Java)</a></li>
+                        <li><a href="https://www.jtt808.com/" target="_blank">部标 JT/T 808/809 协议官网</a></li>
+                        <li><a href="http://www.mot.gov.cn/" target="_blank">交通运输部官网</a></li>
+                    </ul>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 JT809 协议展示 | 基于 JTT 809-2011/2019 标准</p>
+        </div>
+    </footer>
+
+    <script src="js/highlight.js"></script>
+    <script>
+        document.querySelectorAll('pre code').forEach((block) => {
+            hljs.highlightElement(block);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JT809 协议首页</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="index.html" class="logo">JT809 协议</a>
+            <ul class="nav-links">
+                <li><a href="index.html" class="active">首页</a></li>
+                <li><a href="jt809.html">协议详解</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <header class="header">
+        <div class="container">
+            <h1>JT809 平台数据交换协议</h1>
+            <p class="subtitle">道路运输车辆卫星定位系统 | JTT 809-2011/2019</p>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <!-- 项目简介 -->
+            <section class="section">
+                <h2>项目简介</h2>
+                <div class="content-block">
+                    <p>JT809 协议实现了道路运输车辆卫星定位系统上下级平台之间的数据交换，支持主链路和从链路的双链路通信机制。</p>
+                    
+                    <div class="project-card" style="margin-top: 1.5rem;">
+                        <h3>交通运输监管平台</h3>
+                        <p class="project-meta">技术栈：Java Spring Boot + Vue.js</p>
+                        <ul class="project-features">
+                            <li>实现 JT809-2011/2019 协议上下级平台数据交换</li>
+                            <li>支持主链路和从链路的双链路通信机制</li>
+                            <li>完成车辆定位信息实时交换（0x1202 / 0x9202）</li>
+                            <li>实现报警信息交互（疲劳驾驶、超速等）</li>
+                            <li>支持音视频实时传输（基于 JT1078 扩展）</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="project-card" style="margin-top: 1.5rem;">
+                        <h3>安全监测网关</h3>
+                        <p class="project-meta">技术栈：Go + MySQL</p>
+                        <ul class="project-features">
+                            <li>设计高并发 TCP 服务端，支持数千路 GNSS 终端连接</li>
+                            <li>实现 JT809 协议解析与转发网关</li>
+                            <li>完成车辆定位数据实时采集与存储</li>
+                            <li>实现消息补传与重发机制，确保数据完整性</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 技术栈 -->
+            <section class="section">
+                <h2>技术栈</h2>
+                <div class="content-block">
+                    <div class="skills">
+                        <span class="skill-tag">C#</span>
+                        <span class="skill-tag">Java</span>
+                        <span class="skill-tag">Go</span>
+                        <span class="skill-tag">Spring Boot</span>
+                        <span class="skill-tag">Vue.js</span>
+                        <span class="skill-tag">MySQL</span>
+                        <span class="skill-tag">Redis</span>
+                        <span class="skill-tag">TCP/IP</span>
+                        <span class="skill-tag">JT809</span>
+                        <span class="skill-tag">JT1078</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 JT809 协议展示 | 联系方式：yourname@example.com</p>
+        </div>
+    </footer>
+
+    <style>
+        .btn {
+            display: inline-block;
+            background: var(--primary-color);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 4px;
+            text-decoration: none;
+            margin-top: 1rem;
+            transition: background 0.3s;
+        }
+        .btn:hover {
+            background: var(--primary-dark);
+        }
+        
+        .skills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+        
+        .skill-tag {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+        }
+    </style>
+</body>
+</html>
